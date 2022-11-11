@@ -25,12 +25,17 @@ public class PlayerController : MonoBehaviour
     float floatTimer = 0f;
     [SerializeField] AnimationCurve floatingCurve;
 
+    [SerializeField] GameObject floatingEfector;
+
     [SerializeField] Transform groundCheckPosition;
     [SerializeField] float groundCheckRadius = 0.1f;
     [SerializeField] LayerMask groundCheckLayers;
 
-    bool isGrounded => Physics2D.OverlapCircle(new Vector2(transform.position.x,transform.position.y - 0.5f), groundCheckRadius, groundCheckLayers); 
+    bool isGrounded => Physics2D.OverlapCircle(new Vector2(transform.position.x,transform.position.y - 0.5f), groundCheckRadius, groundCheckLayers);
 
+
+    PlayerInput playerInput;
+    InputAction movementInput;
     #endregion
 
 
@@ -42,6 +47,12 @@ public class PlayerController : MonoBehaviour
         defaultGravityScale = rb.gravityScale;
         maxJumps--;
         currentJumps = maxJumps;
+
+
+        playerInput = GetComponent<PlayerInput>();
+        movementInput = playerInput.actions.FindAction("Move");
+        movementInput.Enable();
+
     }
 
     // Update is called once per frame
@@ -57,13 +68,18 @@ public class PlayerController : MonoBehaviour
             {
                 StopFloating();
             }
+
+            floatingEfector.transform.position = transform.position;
+            floatingEfector.SetActive(true);
         }
+
+        Debug.Log(movementInput.ReadValue<Vector2>());
     }
 
     private void FixedUpdate()
     {
         // Handle player movement.
-        rb.AddForce(horizontalInput * movementSpeed * Vector2.right);
+        rb.AddForce(movementInput.ReadValue<Vector2>().x * movementSpeed * Vector2.right);
     }
 
 
