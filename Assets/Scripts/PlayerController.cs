@@ -9,43 +9,46 @@ public class PlayerController : MonoBehaviour
     #region Fields
 
     [Header("Basic movement related:")]
-    [SerializeField] float movementSpeed = 5f;
+    [SerializeField] float maxSpeed = 7f;
+    [SerializeField] float movementSpeed = 7f;
     [SerializeField] float jumpPower = 5f;
     [SerializeField] int maxJumps = 2;
-    int currentJumps;
+    public int currentJumps;
 
     Rigidbody2D rb;
 
     [Header("Floating related:")]
+    [SerializeField] float floatingSpeed = 4f;
     [SerializeField] float floatingGravityScale = 0.2f;
-    [SerializeField] float floatingTime = 3f;
+    [SerializeField] float maxFloatingTime = 3f;
     bool isFloating;
+    bool canFloat = true;
     float defaultGravityScale;
     float floatTimer = 0f;
+    Vector2 tmpVelocity;
 
     [Header("Ground check related:")]
-    [SerializeField] Transform groundCheckPosition;
     [SerializeField] float groundCheckRadius = 0.1f;
     [SerializeField] LayerMask groundCheckLayers;
-    bool isGrounded => Physics2D.OverlapCircle(new Vector2(transform.position.x,transform.position.y - 0.5f), groundCheckRadius, groundCheckLayers);
+    Vector3 groundCheckPosition;
+    bool isGrounded => Physics2D.OverlapCircle(groundCheckPosition, groundCheckRadius, groundCheckLayers);
+
 
     [Header("Power charge related:")]
     [SerializeField] float powerChargePowerMultiplier = 5f;
     [SerializeField] LineRenderer lineRenderer;
     [SerializeField] float maxChargeTime = 3f;
     bool isPowerCharging;
+    bool canceledPowerCharge;
     float chargeTimer;
-    
-
     
     [SerializeField] AnimationCurve floatingCurve;
 
     // Input action asset.
     PlayerInput playerInput;
     InputAction movementInput;
-    float startTime = 0;
 
-
+    float jumpTime;
     #endregion
 
 
@@ -56,9 +59,9 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         defaultGravityScale = rb.gravityScale;
 
-        // Todo: fix maxjumps.
-        maxJumps--;
+        maxSpeed = Mathf.Pow(maxSpeed, 2);
         currentJumps = maxJumps;
+        lineRenderer.enabled = false;
 
         // Input action related.
         playerInput = GetComponent<PlayerInput>();
@@ -71,13 +74,16 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Reset current jumps if the character touches the ground.
-        currentJumps = isGrounded ? maxJumps : currentJumps;
 
         // Handle floating mechanic.
         if (isFloating)
         {
             floatTimer += Time.deltaTime;
-            if (floatTimer >= floatingTime)
+            if(floatTimer<= 0.53f)
+            {
+                rb.velocity = Mathf.SmoothStep(defaultGravityScale, floatingGravityScale, Mathf.Clamp(floatTimer * 2, 0, 1f)) * tmpVelocity;
+            }           
+            if (floatTimer >= maxFloatingTime)
             {
                 StopFloating();
             }            
@@ -88,21 +94,44 @@ public class PlayerController : MonoBehaviour
         // Handle power charge.
         if (isPowerCharging)
         {
-            if (chargeTimer != 0)
-            {
-                rb.AddForce(Vector2.up * chargeTimer / maxChargeTime * powerChargePowerMultiplier);
-                isPowerCharging = false;
-                chargeTimer = 0f;
-            }
+            chargeTimer += Time.deltaTime;
+
+            Vector2 tmpPosition = transform.position;
+            lineRenderer.SetPosition(0, tmpPosition + movementInput.ReadValue<Vector2>());
+            lineRenderer.SetPosition(1, tmpPosition);
             
+            if (chargeTimer >= maxChargeTime || canceledPowerCharge && chargeTimer > 0.6f)
+            {
+                // ToDo: eventually normalize the input.
+                if (movementInput.ReadValue<Vector2>() != Vector2.zero)
+                    rb.AddForce((chargeTimer / maxChargeTime) * powerChargePowerMultiplier * -1 * movementInput.ReadValue<Vector2>(), ForceMode2D.Impulse);
+                
+                StopPowerCharging();
+            }
+            else if (canceledPowerCharge)
+            {
+                StopPowerCharging();
+            }
         }
     }
 
     private void FixedUpdate()
     {
-
-        // Handle player movement.
-        rb.AddForce(movementInput.ReadValue<Vector2>().x * movementSpeed * Vector2.right);
+        // ToDo: better or no clamp.
+        if (!isPowerCharging && rb.velocity.sqrMagnitude < maxSpeed)
+        {
+            // Handle player movement.
+            if (isFloating)
+            {
+                rb.AddForce(movementInput.ReadValue<Vector2>().x * floatingSpeed * Vector2.right);
+            }
+            else
+            {
+                rb.AddForce(movementInput.ReadValue<Vector2>().x * movementSpeed * Vector2.right);
+            } 
+        }
+        
+        // Jump handling.
     }
 
 
@@ -111,6 +140,8 @@ public class PlayerController : MonoBehaviour
     {
         if (ctx.performed && currentJumps > 0)
         {
+            //ToDo: decide if no jumping while floating.
+            StopFloating();
             Jump();
         }
     }
@@ -128,21 +159,21 @@ public class PlayerController : MonoBehaviour
         
     }
 
-
     public void PowerCharge(InputAction.CallbackContext ctx)
     {
         
         if (ctx.performed)
         {
+            StopFloating();
+            canFloat = false;
             isPowerCharging = true;
-            startTime = (float)ctx.time;
+            rb.velocity *= 0.1f;
+            rb.gravityScale = 0.01f;
+            lineRenderer.enabled = true;
         }
         else if (ctx.canceled)
         {
-            //isPowerCharging = false;
-            chargeTimer = (float)(ctx.time - startTime);
-            Math.Clamp(chargeTimer, 0, maxChargeTime);
-            Debug.Log(chargeTimer);
+            canceledPowerCharge = isPowerCharging ? true: false;
         }
     }      
     #endregion
@@ -169,10 +200,15 @@ public class PlayerController : MonoBehaviour
 
     private void StartFloating()
     {
-        isFloating = true;
-        rb.gravityScale = floatingGravityScale;
+        if (canFloat)
+        {
+            isFloating = true;
+            tmpVelocity = rb.velocity;
+            rb.gravityScale = floatingGravityScale;
+            //rb.velocity = rb.velocity * floatingGravityScale;
 
-        // ToDo: Enable floating particles and sound. Modify horizontal movement speed.
+            // ToDo: Enable floating particles and sound. Modify horizontal movement speed. 
+        }
     }
     private void StopFloating()
     {
@@ -181,10 +217,49 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = defaultGravityScale;
     }
 
+
+    private void StopPowerCharging()
+    {
+        isPowerCharging = false;
+        chargeTimer = 0f;
+        canceledPowerCharge = false;
+        canFloat = true;
+        rb.gravityScale = defaultGravityScale;
+        lineRenderer.enabled = false;
+    }
+
     #endregion
+
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Stop floating.
+        StopFloating();
+
+        // Handle groundchecks.
+        groundCheckPosition = collision.GetContact(0).point;
+        // ToDo: extra method for this?
+        // Update current number of jumps. Jumping on a bubble from above gives back 1 jump. On the ground restores all jumps.
+        if (collision.gameObject.CompareTag("Bubble"))
+        {
+            if (Vector2.Dot(Vector2.up, (groundCheckPosition - transform.position).normalized) < -0.5f)
+            {
+                currentJumps = currentJumps < maxJumps ? currentJumps + 1 : currentJumps;
+            }
+        }
+        else
+        {
+            if (Vector2.Dot(Vector2.up, (groundCheckPosition - transform.position).normalized) < -0.5f)
+            {
+                currentJumps = isGrounded ? maxJumps : currentJumps;
+            }         
+        }
+        
+    }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawSphere(new Vector2(transform.position.x, transform.position.y - 0.5f), groundCheckRadius);
+        Gizmos.DrawSphere(groundCheckPosition, groundCheckRadius);
+
     }
 }

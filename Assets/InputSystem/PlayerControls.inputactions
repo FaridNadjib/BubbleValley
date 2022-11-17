@@ -172,6 +172,28 @@
                     "action": "PowerCharge",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "da149e82-c36e-4671-91b5-cd8946692a49",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PowerCharge",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "399d8797-0fa6-41c4-843a-32222fe30fb0",
+                    "path": "<Keyboard>/k",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PowerCharge",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
