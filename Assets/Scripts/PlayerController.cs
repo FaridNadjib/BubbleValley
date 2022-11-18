@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float floatingSpeed = 4f;
     [SerializeField] float floatingGravityScale = 0.2f;
     [SerializeField] float maxFloatingTime = 3f;
+    [SerializeField] ParticleSystem floatingPlayerPS;
     bool isFloating;
     bool canFloat = true;
     float defaultGravityScale;
@@ -48,7 +49,6 @@ public class PlayerController : MonoBehaviour
     PlayerInput playerInput;
     InputAction movementInput;
 
-    float jumpTime;
     #endregion
 
 
@@ -65,7 +65,7 @@ public class PlayerController : MonoBehaviour
 
         // Input action related.
         playerInput = GetComponent<PlayerInput>();
-        movementInput = playerInput.actions.FindAction("MovementInput");
+        movementInput = playerInput.actions.FindAction("Movement");
         movementInput.Enable();
 
     }
@@ -100,11 +100,11 @@ public class PlayerController : MonoBehaviour
             lineRenderer.SetPosition(0, tmpPosition + movementInput.ReadValue<Vector2>());
             lineRenderer.SetPosition(1, tmpPosition);
             
-            if (chargeTimer >= maxChargeTime || canceledPowerCharge && chargeTimer > 0.6f)
+            if (chargeTimer >= maxChargeTime || canceledPowerCharge && chargeTimer > maxChargeTime * 0.2f)
             {
                 // ToDo: eventually normalize the input.
                 if (movementInput.ReadValue<Vector2>() != Vector2.zero)
-                    rb.AddForce((chargeTimer / maxChargeTime) * powerChargePowerMultiplier * -1 * movementInput.ReadValue<Vector2>(), ForceMode2D.Impulse);
+                    rb.AddForce((chargeTimer / maxChargeTime) * powerChargePowerMultiplier * -1 * movementInput.ReadValue<Vector2>().normalized, ForceMode2D.Impulse);
                 
                 StopPowerCharging();
             }
@@ -113,6 +113,7 @@ public class PlayerController : MonoBehaviour
                 StopPowerCharging();
             }
         }
+
     }
 
     private void FixedUpdate()
@@ -123,7 +124,7 @@ public class PlayerController : MonoBehaviour
             // Handle player movement.
             if (isFloating)
             {
-                rb.AddForce(movementInput.ReadValue<Vector2>().x * floatingSpeed * Vector2.right);
+                rb.AddForce(movementInput.ReadValue<Vector2>().normalized * floatingSpeed);
             }
             else
             {
@@ -208,13 +209,21 @@ public class PlayerController : MonoBehaviour
             //rb.velocity = rb.velocity * floatingGravityScale;
 
             // ToDo: Enable floating particles and sound. Modify horizontal movement speed. 
+            floatingPlayerPS.Clear();
+            floatingPlayerPS.Play();
         }
     }
     private void StopFloating()
     {
         isFloating = false;
         floatTimer = 0f;
-        rb.gravityScale = defaultGravityScale;
+        if (!isPowerCharging)
+            rb.gravityScale = defaultGravityScale;
+
+
+        // Deactivate the visual stuff.
+        floatingPlayerPS.Stop();
+        //floatingPlayerPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
 
