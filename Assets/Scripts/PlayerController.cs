@@ -42,6 +42,12 @@ public class PlayerController : MonoBehaviour
     bool isPowerCharging;
     bool canceledPowerCharge;
     float chargeTimer;
+    [SerializeField] GameObject pointEffector;
+    [SerializeField] float rechargeTime = 1.2f;
+    float rechargeTimer;
+    bool canPowerCharge = true;
+    bool isRecharging;
+
     
     [SerializeField] AnimationCurve floatingCurve;
 
@@ -113,6 +119,17 @@ public class PlayerController : MonoBehaviour
                 StopPowerCharging();
             }
         }
+        // Reload power charge.
+        if (isRecharging)
+        {
+            rechargeTimer += Time.deltaTime;
+            if (rechargeTimer >= rechargeTime)
+            {
+                canPowerCharge = true;
+                rechargeTimer = 0;
+                isRecharging = false;
+            }
+        }
 
     }
 
@@ -165,12 +182,10 @@ public class PlayerController : MonoBehaviour
         
         if (ctx.performed)
         {
-            StopFloating();
-            canFloat = false;
-            isPowerCharging = true;
-            rb.velocity *= 0.1f;
-            rb.gravityScale = 0.01f;
-            lineRenderer.enabled = true;
+            if (canPowerCharge)
+            {
+                StartPowerCharge();
+            }
         }
         else if (ctx.canceled)
         {
@@ -226,15 +241,28 @@ public class PlayerController : MonoBehaviour
         //floatingPlayerPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
-
+    private void StartPowerCharge()
+    {
+        StopFloating();
+        canFloat = false;
+        isPowerCharging = true;
+        lineRenderer.enabled = true;
+        pointEffector.transform.position = transform.position;
+        pointEffector.SetActive(true);
+        //rb.velocity *= 0.1f;
+        //rb.gravityScale = 0.01f;
+    }
     private void StopPowerCharging()
     {
         isPowerCharging = false;
         chargeTimer = 0f;
         canceledPowerCharge = false;
         canFloat = true;
-        rb.gravityScale = defaultGravityScale;
+        //rb.gravityScale = defaultGravityScale;
         lineRenderer.enabled = false;
+        pointEffector.SetActive(false);
+        isRecharging = true;
+        canPowerCharge = false;
     }
 
     #endregion
