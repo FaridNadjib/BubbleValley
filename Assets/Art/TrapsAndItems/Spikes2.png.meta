@@ -42,12 +42,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -103,7 +103,91 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: Spikes2_0
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 531
+        width: 341
+        height: 421
+      alignment: 9
+      pivot: {x: 0.5093071, y: 0.074073486}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a4b67b535a883c4ca80498b759ee390
+      internalID: 1340242240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spikes2_1
+      rect:
+        serializedVersion: 2
+        x: 558
+        y: 553
+        width: 248
+        height: 419
+      alignment: 9
+      pivot: {x: 0.51919603, y: 0.041742366}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29533c7dcc8b54445a134b6676178d6d
+      internalID: -1469073752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spikes2_2
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 39
+        width: 285
+        height: 455
+      alignment: 9
+      pivot: {x: 0.47772837, y: 0.11857833}
+      border: {x: 5, y: 0, z: 4, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5142a5db87c86e64699294aa6c31121b
+      internalID: -1840142943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spikes2_3
+      rect:
+        serializedVersion: 2
+        x: 568
+        y: 59
+        width: 293
+        height: 220
+      alignment: 9
+      pivot: {x: 0.51083195, y: 0.103285044}
+      border: {x: 15, y: 0, z: 17, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df6a5406fbf98c64d8cbf0a410dfa88f
+      internalID: 881887814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -114,7 +198,11 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Spikes2_0: 1340242240
+      Spikes2_3: 881887814
+      Spikes2_2: -1840142943
+      Spikes2_1: -1469073752
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

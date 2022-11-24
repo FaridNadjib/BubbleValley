@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the basic bubbles.
+/// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class BubbleController : MonoBehaviour
 {
