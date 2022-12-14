@@ -680,7 +680,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -1558,7 +1558,7 @@ ParticleSystem:
     flipU: 0
     flipV: 0
   VelocityModule:
-    enabled: 0
+    enabled: 1
     x:
       serializedVersion: 2
       minMaxState: 0
@@ -1615,7 +1615,7 @@ ParticleSystem:
     y:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: -6.57
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -2142,7 +2142,7 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    inWorldSpace: 0
+    inWorldSpace: 1
   InheritVelocityModule:
     enabled: 0
     m_Mode: 0
@@ -4850,7 +4850,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4597983485815096086}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.381, y: 0.949, z: 0}
+  m_LocalPosition: {x: -2.4, y: 0.76, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4941,7 +4941,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.5
+      scalar: 3
       minScalar: 2
       maxCurve:
         serializedVersion: 2
@@ -5781,7 +5781,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 4
-      repeatInterval: 0.018
+      repeatInterval: 0.025
       probability: 1
   SizeModule:
     enabled: 1
@@ -9658,7 +9658,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 11
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 1
@@ -14643,7 +14643,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.5
+      scalar: 3
       minScalar: 2
       maxCurve:
         serializedVersion: 2
@@ -19360,7 +19360,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 11
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 1
@@ -19456,7 +19456,7 @@ GameObject:
   - component: {fileID: 5646355585179030601}
   - component: {fileID: 5646355585179030598}
   - component: {fileID: 5646355585179030599}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PlatformDetail (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19579,7 +19579,7 @@ GameObject:
   - component: {fileID: 5646355586045573748}
   - component: {fileID: 5646355586045573749}
   - component: {fileID: 5646355586045573750}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PlatformDetail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20010,7 +20010,7 @@ PlatformEffector2D:
   m_UseColliderMask: 1
   m_ColliderMask:
     serializedVersion: 2
-    m_Bits: 65
+    m_Bits: 193
   m_RotationalOffset: 0
   m_UseOneWay: 1
   m_UseOneWayGrouping: 0

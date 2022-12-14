@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float jumpPower = 5f;
     [SerializeField] int maxJumps = 2;
     public int currentJumps;
+    [SerializeField] ParticleSystem jumpParticles;
 
     Rigidbody2D rb;
 
@@ -47,8 +48,29 @@ public class PlayerController : MonoBehaviour
     float rechargeTimer;
     bool canPowerCharge = true;
     bool isRecharging;
+    [SerializeField] ParticleSystem chargePS;
 
-    
+    [Header("Misc:")]
+    [SerializeField] TrailRenderer trail;
+    [SerializeField] float trailVelocityThreshold = 5f;
+    [SerializeField] float shakeVelocityThreshold = 5f;
+    [SerializeField] GameObject collisionParticles;
+
+    [Header("SpikeBall related:")]
+    [SerializeField] GameObject spikeBall;
+    [SerializeField] float spikeBallTime = 0.5f;
+    float spikeBallTimer;
+    bool isSpikeBall;
+
+    [Header("Sound related:")]
+    [SerializeField] AudioSource source;
+    [SerializeField] AudioSource collisionSource;
+    [SerializeField] AudioClip jumpSound;
+    [SerializeField] AudioClip collisionSound;
+    [SerializeField] AudioClip chargeSound;
+    [SerializeField] AudioClip spikeSound;
+    [SerializeField] AudioClip floatingSound;
+
     [SerializeField] AnimationCurve floatingCurve;
 
     // Input action asset.
@@ -73,6 +95,9 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         movementInput = playerInput.actions.FindAction("Movement");
         movementInput.Enable();
+
+        // Misc.
+        trailVelocityThreshold = Mathf.Pow(trailVelocityThreshold, 2);
 
     }
 
@@ -111,7 +136,7 @@ public class PlayerController : MonoBehaviour
                 // ToDo: eventually normalize the input.
                 if (movementInput.ReadValue<Vector2>() != Vector2.zero)
                     rb.AddForce((chargeTimer / maxChargeTime) * powerChargePowerMultiplier * -1 * movementInput.ReadValue<Vector2>().normalized, ForceMode2D.Impulse);
-                
+        
                 StopPowerCharging();
             }
             else if (canceledPowerCharge)
@@ -131,6 +156,22 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Spikeball timer.
+        if (isSpikeBall)
+        {
+            if (spikeBallTimer > 0f)
+            {
+                spikeBallTimer -= Time.deltaTime;
+            }
+            else
+            {
+                spikeBall.SetActive(false);
+                isSpikeBall = false;
+            }
+        }
+
+        // Update velocity trail.
+        trail.emitting = rb.velocity.sqrMagnitude > trailVelocityThreshold ? true : false;
     }
 
     private void FixedUpdate()
@@ -173,6 +214,7 @@ public class PlayerController : MonoBehaviour
         else if (ctx.canceled)
         {
             StopFloating();
+            source.Stop();
         }
         
     }
@@ -191,7 +233,19 @@ public class PlayerController : MonoBehaviour
         {
             canceledPowerCharge = isPowerCharging ? true: false;
         }
-    }      
+    }
+
+    public void SpikeBall(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed && !isSpikeBall)
+        {
+            //spriteRenderer.sprite = spikeBallLook;
+            spikeBall.SetActive(true);
+            isSpikeBall = true;
+            spikeBallTimer = spikeBallTime;
+            source.PlayOneShot(spikeSound);
+        }
+    }
     #endregion
 
     #region UtilityMethods
@@ -212,6 +266,9 @@ public class PlayerController : MonoBehaviour
 
         currentJumps--;
         // ToDo: Enable particles and sound.
+        source.PlayOneShot(jumpSound);
+        jumpParticles.Clear();
+        jumpParticles.Play();
     }
 
     private void StartFloating()
@@ -226,6 +283,7 @@ public class PlayerController : MonoBehaviour
             // ToDo: Enable floating particles and sound. Modify horizontal movement speed. 
             floatingPlayerPS.Clear();
             floatingPlayerPS.Play();
+            source.PlayOneShot(floatingSound);
         }
     }
     private void StopFloating()
@@ -239,6 +297,7 @@ public class PlayerController : MonoBehaviour
         // Deactivate the visual stuff.
         floatingPlayerPS.Stop();
         //floatingPlayerPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        //source.Stop();
     }
 
     private void StartPowerCharge()
@@ -248,7 +307,9 @@ public class PlayerController : MonoBehaviour
         isPowerCharging = true;
         lineRenderer.enabled = true;
         pointEffector.transform.position = transform.position;
-        pointEffector.SetActive(true);
+        pointEffector.SetActive(true);       
+        chargePS.Play();
+        source.PlayOneShot(chargeSound);
         //rb.velocity *= 0.1f;
         //rb.gravityScale = 0.01f;
     }
@@ -263,6 +324,9 @@ public class PlayerController : MonoBehaviour
         pointEffector.SetActive(false);
         isRecharging = true;
         canPowerCharge = false;
+        chargePS.Clear();
+        chargePS.Stop();
+        source.Stop();
     }
 
     #endregion
@@ -279,19 +343,53 @@ public class PlayerController : MonoBehaviour
         // Update current number of jumps. Jumping on a bubble from above gives back 1 jump. On the ground restores all jumps.
         if (collision.gameObject.CompareTag("Bubble"))
         {
-            if (Vector2.Dot(Vector2.up, (groundCheckPosition - transform.position).normalized) < -0.5f)
+            if (isSpikeBall)
             {
-                currentJumps = currentJumps < maxJumps ? currentJumps + 1 : currentJumps;
+                collision.gameObject.GetComponent<BubbleController>().DestroyBubble();
             }
+            else
+            {
+                if (Vector2.Dot(Vector2.up, (groundCheckPosition - transform.position).normalized) < -0.5f)
+                {
+                    currentJumps = currentJumps < maxJumps ? currentJumps + 1 : currentJumps;
+                }
+            }
+            
         }
         else
         {
             if (Vector2.Dot(Vector2.up, (groundCheckPosition - transform.position).normalized) < -0.5f)
             {
                 currentJumps = isGrounded ? maxJumps : currentJumps;
-            }         
+
+                //// Make the camera shake if the velocity is high enough.
+                //if (rb.velocity.magnitude > shakeVelocityThreshold)
+                //{
+                //    CameraShake.Instance.ShakeCamera(2.5f, 0.2f);
+                //}
+            }
+            // Make the camera shake if the velocity is high enough.
+            if (rb.velocity.magnitude > shakeVelocityThreshold)
+            {
+                CameraShake.Instance.ShakeCamera(2.5f, 0.2f);
+            }
+
+            // Instantiate some ground particles.
+            Destroy(Instantiate(collisionParticles, groundCheckPosition, Quaternion.identity), 3f);
         }
-        
+
+        // ToDo: Fix sound.
+        if(!collisionSource.isPlaying)
+            collisionSource.PlayOneShot(collisionSound);
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Bubble"))
+        {
+            if (isSpikeBall)
+                collision.gameObject.GetComponent<BubbleController>().DestroyBubble();
+        }
     }
 
     private void OnDrawGizmos()

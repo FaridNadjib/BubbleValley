@@ -13,10 +13,13 @@ public class BubbleController : MonoBehaviour
     float currentSize;
     Vector2 tmpScale = new Vector2();
     [SerializeField] float growRate = 0.1f;
-    float scoreMultiplier = 0f;
+    float scoreMultiplier = 10f;
     [SerializeField] GameObject scorePrefab;
 
-
+    [SerializeField] GameObject rewardPrefab;
+    [SerializeField] GameObject bubbleExplosion;
+    bool doesGiveReward = true;
+    bool isBeingDestroyed;
 
     // Start is called before the first frame update
     void Awake()
@@ -52,15 +55,34 @@ public class BubbleController : MonoBehaviour
 
     public void DestroyBubble()
     {
-        // ToDo: play sound and particles.
+        // Only run this method once.
+        if (isBeingDestroyed)
+            return;
+        if (!isBeingDestroyed)
+            isBeingDestroyed = true;
 
-        GameManager.Instance.ChangeScoreValue((int)(transform.localScale.x * scoreMultiplier));
-        if ((int)(transform.localScale.x * scoreMultiplier) != 0)
+        if (doesGiveReward)
         {
-            Instantiate(scorePrefab, transform.position, Quaternion.identity).GetComponent<ScoreDisplay>().SetScoreValue((int)(transform.localScale.x * scoreMultiplier));
+            GameManager.Instance.ChangeScoreValue((int)(transform.localScale.x * scoreMultiplier));
+            if ((int)(transform.localScale.x * scoreMultiplier) != 0)
+            {
+                Instantiate(scorePrefab, transform.position, Quaternion.identity).GetComponent<ScoreDisplay>().SetScoreValue((int)(transform.localScale.x * scoreMultiplier));
+                AudioManager.Instance.PlayRewardSound();
+            }
+            // Instantiate player reward.
+            //int rewardAmount = currentSize >= 1.5f ? 5 : currentSize > 1f ? 3 : currentSize > 0.5f ? 2 : 0;
+            //for (int i = 0; i < rewardAmount; i++)
+            //{
+            //    Instantiate(rewardPrefab, transform.position, Quaternion.identity);
+            //}
         }
 
-        Destroy(gameObject, 0.15f);
+        // Instantiate a particle effect.
+        Destroy(Instantiate(bubbleExplosion, transform.position, Quaternion.identity), 3f);
+
+        AudioManager.Instance.PlayBubbleSound();
+
+        Destroy(gameObject);
         BubbleSpawner.ChangeBubbleCounter(-1);
     }
 
@@ -68,6 +90,7 @@ public class BubbleController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Trap"))
         {
+            doesGiveReward = false;
             DestroyBubble();
         }
     }
