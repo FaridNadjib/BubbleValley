@@ -86,13 +86,13 @@ public class BubbleController : MonoBehaviour
         BubbleSpawner.ChangeBubbleCounter(-1);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Trap"))
-        {
-            doesGiveReward = false;
-            DestroyBubble();
-        }
-    }
+    //private void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Trap"))
+    //    {
+    //        doesGiveReward = false;
+    //        DestroyBubble();
+    //    }
+    //}
 
 }
